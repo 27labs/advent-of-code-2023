@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "args": [],
+            "cwd": "${workspaceFolder:codespaces-swift}",
+            "name": "Debug adventOfCode",
+            "program": "${workspaceFolder:codespaces-swift}/.build/debug/adventOfCode",
+            "preLaunchTask": "swift: Build Debug adventOfCode"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "args": [],
+            "cwd": "${workspaceFolder:codespaces-swift}",
+            "name": "Release adventOfCode",
+            "program": "${workspaceFolder:codespaces-swift}/.build/release/adventOfCode",
+            "preLaunchTask": "swift: Build Release adventOfCode"
+        }
+    ]
+}
