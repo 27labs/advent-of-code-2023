@@ -1,9 +1,9 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-var entrada: Array<Int> = []
+var cubesRGB: [(Int,Int,Int)] = []
 
-let cubesRGB = (12,13,14)
+var index = 0
 
 while let input = readLine() {
     let idSplit = input.split(separator: ":")
@@ -13,9 +13,7 @@ while let input = readLine() {
     let gameSplit = idSplit[1].split(separator: ";")
 
     // print(gameSplit)
-
-    var possible = true
-
+    cubesRGB.append((0,0,0))
     for match in gameSplit {
         let cubeSplit = match.split(separator: ",")
         // print(cubeSplit)
@@ -24,18 +22,21 @@ while let input = readLine() {
             // print(amountSplit)
             switch amountSplit[1] {
                 case "red":
-                    if Int(amountSplit[0]) ?? 0 > cubesRGB.0 { possible = false }
+                    let amount = Int(amountSplit[0]) ?? 0
+                    if amount > cubesRGB[index].0 { cubesRGB[index].0 = amount }
                 case "green":
-                    if Int(amountSplit[0]) ?? 0 > cubesRGB.1 { possible = false }
+                    let amount = Int(amountSplit[0]) ?? 0
+                    if amount > cubesRGB[index].1 { cubesRGB[index].1 = amount }
                 case "blue":
-                    if Int(amountSplit[0]) ?? 0 > cubesRGB.2 { possible = false }
+                    let amount = Int(amountSplit[0]) ?? 0 
+                    if amount > cubesRGB[index].2 { cubesRGB[index].2 = amount }
                 default:
                     break
             }
         }
     }
 
-    if possible { entrada.append(Int(idSplit[0].split(separator: " ")[1]) ?? 0)}
+    index += 1
 }
 
-print(entrada.reduce(0, {x, y in x + y}))
+print(cubesRGB.reduce(0, {x, y in x + y.0 * y.1 * y.2}))
