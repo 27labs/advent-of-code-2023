@@ -4,7 +4,7 @@
 var entrada: [[Int]] = []
 
 while let input = readLine() {
-    entrada.append(input.split(separator: " ")[1...].map { Int($0)! })
+    entrada.append([Int(input.split(separator: " ")[1...].reduce("", { a, b in a + b }))!])
 }
 
 var waysToWin: [Int] = []
