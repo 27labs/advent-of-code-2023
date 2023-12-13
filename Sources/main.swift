@@ -17,7 +17,7 @@ func extrapolate(history: [Int]) -> Int {
         for i in 1..<history.count {
             difference.append(history[i] - history[i - 1])
         }
-        return difference.last! + extrapolate(history: difference)
+        return difference.first! - extrapolate(history: difference)
     }
     return 0
 }
@@ -25,7 +25,7 @@ func extrapolate(history: [Int]) -> Int {
 var sumOfValues = 0
 
 for history in entrada {
-    sumOfValues += history.last! + extrapolate(history: history)
+    sumOfValues += history.first! - extrapolate(history: history)
 }
 
 print(sumOfValues)
