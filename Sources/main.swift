@@ -18,18 +18,41 @@ while let input = readLine() {
     )
 }
 
-var currentLocation = "AAA"
+var currentLocations: [String] = entrada.keys.filter { $0.last == "A" }
 
-var steps = 0
+var steps = Array(repeating: 0, count: currentLocations.count)
 
-while currentLocation != "ZZZ" {
-        if instrucciones[steps % instrucciones.count] == "L" {
-            currentLocation = entrada[currentLocation]!.left
+for i in 0..<currentLocations.count {
+    var location = currentLocations[i]
+    while location.last != "Z" {
+        if instrucciones[steps[i] % instrucciones.count] == "L" {
+            location = entrada[location]!.left
         }
-        if instrucciones[steps % instrucciones.count] == "R" {
-            currentLocation = entrada[currentLocation]!.right
+        if instrucciones[steps[i] % instrucciones.count] == "R" {
+            location = entrada[location]!.right
         }
-    steps += 1
+        steps[i] += 1
+    }
 }
 
-print(steps)
+func greatestCommonDivisor(num1: Int, num2: Int) -> Int {
+    var i: Int
+
+    var j = max(num1, num2)
+
+    var k = min(num1, num2)
+
+    while k != 0 {
+        i = j
+        j = k
+        k = i % j
+    }
+
+    return j
+}
+
+func leastCommonMultiple(num1: Int, num2: Int) -> Int {
+    return (num1 * num2 / greatestCommonDivisor(num1: num1, num2: num2))
+}
+
+print(steps.reduce(1, { m, n in leastCommonMultiple(num1: m, num2: n)}))
