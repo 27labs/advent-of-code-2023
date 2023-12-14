@@ -1,5 +1,6 @@
-# Swift en Codespaces [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-Una plantilla para programación en Swift usando GitHub Codespaces.
+# Advent of Code 2023 con Swift [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+Mis soluciones en Swift usando GitHub Codespaces desde mi teléfono móvil.
+Para este Codespace creé una [plantilla](https://github.com/27labs/codespaces-swift).
 
 ## Instrucciones
 #### En el teléfono móvil:
