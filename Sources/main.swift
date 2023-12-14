@@ -16,7 +16,16 @@ enum Direcciones {
 
 var inicioXY = "0 0"
 
-var tuberiasXY: [String:(Direcciones,Direcciones)] = [:]
+var tuberiasXY: [String:(Direcciones,Direcciones,String)] = [:]
+
+func directionMap(_ direcciones: [Direcciones]) -> String {
+    if direcciones.contains(Direcciones.norte) && direcciones.contains(Direcciones.sur) { return "|" }
+    if direcciones.contains(Direcciones.este) && direcciones.contains(Direcciones.oeste) { return "-" }
+    if direcciones.contains(Direcciones.norte) && direcciones.contains(Direcciones.este) { return "L" }
+    if direcciones.contains(Direcciones.norte) && direcciones.contains(Direcciones.oeste) { return "J" }
+    if direcciones.contains(Direcciones.sur) && direcciones.contains(Direcciones.oeste) { return "7" }
+    return "F"
+}
 
 for i in 0..<entrada.count {
     for j in 0..<entrada.first!.count {
@@ -43,16 +52,16 @@ for i in 0..<entrada.count {
                     conexiones.append(Direcciones.oeste)
                 }
             }
-            tuberiasXY["\(j) \(i)"] = (conexiones[0],conexiones[1])
+            tuberiasXY["\(j) \(i)"] = (conexiones[0],conexiones[1],directionMap(conexiones))
             continue
         }
         switch(entrada[i][j]) {
-            case "|": tuberiasXY["\(j) \(i)"] = (Direcciones.norte,Direcciones.sur)
-            case "-": tuberiasXY["\(j) \(i)"] = (Direcciones.este, Direcciones.oeste)
-            case "L": tuberiasXY["\(j) \(i)"] = (Direcciones.norte, Direcciones.este)
-            case "J": tuberiasXY["\(j) \(i)"] = (Direcciones.norte, Direcciones.oeste)
-            case "7": tuberiasXY["\(j) \(i)"] = (Direcciones.sur, Direcciones.oeste)
-            case "F": tuberiasXY["\(j) \(i)"] = (Direcciones.este, Direcciones.sur)
+            case "|": tuberiasXY["\(j) \(i)"] = (Direcciones.norte,Direcciones.sur, "|")
+            case "-": tuberiasXY["\(j) \(i)"] = (Direcciones.este, Direcciones.oeste, "-")
+            case "L": tuberiasXY["\(j) \(i)"] = (Direcciones.norte, Direcciones.este, "L")
+            case "J": tuberiasXY["\(j) \(i)"] = (Direcciones.norte, Direcciones.oeste, "J")
+            case "7": tuberiasXY["\(j) \(i)"] = (Direcciones.sur, Direcciones.oeste, "7")
+            case "F": tuberiasXY["\(j) \(i)"] = (Direcciones.este, Direcciones.sur, "F")
             default: continue
         }
     }
@@ -60,7 +69,7 @@ for i in 0..<entrada.count {
 
 var paso = (inicioXY,inicioXY)
 
-var navegadas: Set<String> = []
+var navegadas: Set<String> = [inicioXY]
 
 var pasos = 0
 
@@ -85,9 +94,6 @@ let direccionesOpuestas = [
 ]
 
 var direccionAnterior = (direccionesOpuestas[tuberiasXY[inicioXY]!.0]!, direccionesOpuestas[tuberiasXY[inicioXY]!.1]!)
-
-print(paso)
-print("----")
 
 while true {
 
@@ -124,8 +130,6 @@ while true {
 
     paso = (siguienteA,siguienteB)
 
-    print(paso)
-
     if navegadas.contains(siguienteA) || navegadas.contains(siguienteB) { break }
 
     navegadas.update(with: siguienteA)
@@ -134,4 +138,29 @@ while true {
     pasos += 1
 }
 
-print(pasos)
+var tilesInside = 0
+
+for m in 0..<entrada.count {
+    let pipes = navegadas.filter {
+        Int($0.split(separator: " ")[1])! == m
+    }
+    let validPipes = pipes.filter {
+        ["|","7","F"].contains(tuberiasXY[$0]!.2)
+    }
+    var boundaries = [[0,0]]
+    for pipe in (pipes.sorted {
+        Int($0.split(separator: " ")[0])! < Int($1.split(separator: " ")[0])!
+    }) {
+        if validPipes.contains(pipe) {
+            let boundary = Int(pipe.split(separator: " ")[0])!
+            boundaries.append([boundary,0])
+        } else {
+            boundaries[boundaries.count - 1][1] = boundaries[boundaries.count - 1][1] + 1
+        }
+    }
+    for l in stride(from: 1, to: boundaries.count - 1, by: 2) {
+        tilesInside += boundaries[l+1][0] - boundaries[l][0] - boundaries[l][1] - 1
+    }
+}
+
+print(tilesInside)
