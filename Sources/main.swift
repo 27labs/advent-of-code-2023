@@ -5,20 +5,21 @@ var entrada: [[(Int,Int)?]] = []
 
 var y = 0
 var width = 0
+var offset = 0
 while let input = readLine() {
     if width == 0 {
         width = input.count
     }
     entrada.append(Array(repeating: nil, count: width))
     if !input.contains("#") {
-        entrada.append(Array(repeating: nil, count: width))
-        y += 2
+        offset += 1000000 - 1
+        y += 1
         continue
     }
     var x = 0
     for casilla in input.split(separator: "") {
         if casilla == "#" {
-            entrada[y][x] = (x,y)
+            entrada[y][x] = (x,y + offset)
         }
         x += 1
     }
@@ -27,7 +28,7 @@ while let input = readLine() {
 
 var transpuesta: [(Int,Int)] = []
 
-var offset = 0
+offset = 0
 for indice in 0..<width {
     let columna = entrada.map {
         if $0[indice] != nil {
@@ -43,7 +44,7 @@ for indice in 0..<width {
         transpuesta.append(contentsOf: expandidas)
         continue
     }
-    offset += 1
+    offset += 1000000 - 1
 }
 
 func calcularDistancia(_ galaxia1: (Int,Int), _ galaxia2: (Int,Int)) -> Int {
