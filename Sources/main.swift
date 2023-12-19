@@ -3,37 +3,40 @@
 
 var entrada: [Any] = []
 
-func esValida(_ resortes: [Substring], _ grupos: [Int]) -> Int {
-    var blocks: [Int] = []
-    var dañados = 0
-    for resorte in resortes {
-        if resorte == "." {
-            if dañados > 0 {
-                blocks.append(dañados)
-                dañados = 0
-            }
+var memoizer: [[Int]: Int] = [:]
+
+func calcularPosibles(_ springLine: [Substring], _ blockList: [Int], _ springIndex: Int, _ blockIndex: Int, _ broken: Int) -> Int {
+    let key = [springIndex, blockIndex, broken]
+    if let storedResult = memoizer[key] {
+        return storedResult
+    }
+
+    if springIndex == springLine.count {
+        if blockIndex == blockList.count && broken == 0 {
+            return 1
+        } else if blockIndex == (blockList.count - 1) && blockList[blockIndex] == broken {
+            return 1
         } else {
-            dañados += 1
+            return 0
         }
     }
-    if dañados > 0 { blocks.append(dañados) }
-    if blocks == grupos {
-        return 1
-    } else {
-        return 0
-    }
-}
 
-func calcularPosibles(_ springLine: [Substring], _ blockList: [Int], _ index: Int) -> Int {
-    if index == springLine.count {
-        return esValida(springLine,blockList)
+    var answer = 0
+    for springType: Substring in [".","#"] {
+        if [springType,"?"].contains(springLine[springIndex]) {
+            if springType == "." {
+                if broken == 0 {
+                    answer += calcularPosibles(springLine, blockList, springIndex + 1, blockIndex, 0)
+                } else if blockIndex < blockList.count && blockList[blockIndex] == broken {
+                    answer += calcularPosibles(springLine, blockList, springIndex + 1, blockIndex + 1, 0)
+                }
+            } else {
+                answer += calcularPosibles(springLine, blockList, springIndex + 1, blockIndex, broken + 1)
+            }
+        }
     }
-
-    if springLine[index] == "?" {
-        return calcularPosibles(Array(springLine[..<index] + ["."] + springLine[(index + 1)...]), blockList, index + 1) + calcularPosibles(Array(springLine[..<index] + ["#"] + springLine[(index + 1)...]), blockList, index + 1)
-    }
-
-    return calcularPosibles(springLine, blockList, index + 1)
+    memoizer[key] = answer
+    return answer
 }
 
 var arreglos = 0
@@ -41,10 +44,19 @@ var arreglos = 0
 while let input = readLine() {
     let splitted = input.split(separator: " ")
     let springs = splitted[0].split(separator: "")
+    var springList = springs
+    for _ in 1..<5 {
+        springList += ["?"] + springs
+    }
     let blocks = splitted[1].split(separator: ",").map {
         Int($0)!
     }
-    arreglos += calcularPosibles(springs,blocks,0)
+    var blockList = blocks
+    for _ in 1..<5 {
+        blockList += blocks
+    }
+    memoizer = [:]
+    arreglos += calcularPosibles(springList,blockList,0,0,0)
 }
 
 print(arreglos)
