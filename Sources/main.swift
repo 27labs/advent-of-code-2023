@@ -1,75 +1,145 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-var entrada: [Int: [[Substring]?]] = [:]
+var entrada: [Int: [[Substring]]] = [:]
 
 enum MirrorOrientation {
     case vertical
     case horizontal
 }
 
-var i = 0
-var note = 0
-var matches = 0
-var matchList: [Int:(MirrorOrientation,Int)?] = [:]
-while let input = readLine() {
-    let line = input.split(separator: "")
-    if line.count == 0 {
-        if matches > 0 {
-            matchList[note] = (MirrorOrientation.horizontal, i - matches)
+func compareLines(actual: [Substring], smudged: [Substring]) -> Bool? {
+    if actual == smudged { return false }
+    for index in 0..<smudged.count {
+        let possible: [Substring]
+        if smudged[index] == "." {
+            if index <= 0 {
+                possible = ["#"] + smudged[1...]
+            } else if index >= smudged.count - 1 {
+                possible = smudged[..<index] + ["#"]
+            } else {
+                possible = smudged[0..<index] + ["#"] + smudged[(index + 1)...]
+            }
+        } else {
+            if index <= 0 {
+                possible = ["."] + smudged[1...]
+            } else if index >= smudged.count - 1 {
+                possible = smudged[..<index] + ["."]
+            } else {
+                possible = smudged[0..<index] + ["."] + smudged[(index + 1)...]
+            }
         }
+        if actual == possible { return true }
+    }
+    return nil
+}
+
+var note = 0
+while let input = readLine() {
+    if input == "" {
         note += 1
-        i = 0
-        matches = 0
         continue
     }
-    if i - (matches * 2 + 1) >= 0 {
-        if entrada[note]![i - (matches * 2 + 1)] == line {
-            matches += 1
-        } else {
-            matches = 0
-        }
-    } else if i > 0 {
-        matches += 1
-    }
-    if entrada[note] != nil {
-        entrada[note]!.append(line)
+    if entrada[note] == nil {
+        entrada[note] = [input.split(separator: "")]
     } else {
-        entrada[note] = [line]
+        entrada[note]!.append(input.split(separator: ""))
     }
-    i += 1
 }
 
-if matches > 0 {
-    matchList[note] = (MirrorOrientation.horizontal, i - matches)
-}
+func fixSmudge(_ note: [[Substring]]) -> Int? {
+    var i = 1
+    var savepoints: [(Int, Int, Bool)] = [(0,0,false)]
+    var deadends: Set<Int> = [0]
 
-for noteIndex in 0..<entrada.count {
-    if matchList[noteIndex] != nil { continue }
-    var transpuesta: [[Substring]?] = []
-    var matches2 = 0
-    for column in 0..<entrada[noteIndex]![0]!.count {
-        var columna: [Substring] = []
-        for line in entrada[noteIndex]! {
-            columna.append(line![column])
-        }
-        if column - matches2 * 2 - 1 >= 0 {
-            if transpuesta[column - matches2 * 2 - 1]! == columna {
-                matches2 += 1
-            } else {
-                matches2 = 0
+    while i < note.count {
+        if !deadends.contains(i) && !savepoints.last!.2 {
+            if let smudgeFound = compareLines(actual: note[i - 1], smudged: note[i]) {
+                savepoints.append((i,1,smudgeFound))
+                i += 1
+                continue
             }
-        } else if column > 0 {
-            matches2 += 1
         }
-        transpuesta.append(columna)
+
+        if i - (savepoints.last!.1 * 2 + 1) >= 0 {
+            if savepoints.last!.1 > 0 {
+                if let smudgeFound = compareLines(actual: note[i - (savepoints.last!.1 * 2 + 1)], smudged: note[i]) {
+                    if savepoints.last!.2 && smudgeFound {
+                        let indexOfSplit = savepoints.last!.0
+                        deadends.update(with: indexOfSplit)
+                        if savepoints.count > 1 {
+                            i = indexOfSplit
+                            savepoints.removeLast()
+                        } else {
+                            savepoints = [(i,0,false)]
+                        }
+                        continue
+                    }
+                    savepoints[savepoints.count - 1].1 += 1
+                    savepoints[savepoints.count - 1].2 = savepoints.last!.2 || smudgeFound
+                } else {
+                    let indexOfSplit = savepoints.last!.0
+                    deadends.update(with: indexOfSplit)
+                    if savepoints.count > 1 {
+                        i = indexOfSplit
+                        savepoints.removeLast()
+                    } else {
+                        savepoints = [(i,0,false)]
+                    }
+                    continue
+                }
+            } else {
+                savepoints[savepoints.count - 1].0 = i
+            }
+        } else if i > 0 {
+            if savepoints[savepoints.count - 1].2 {
+                savepoints[savepoints.count - 1].1 += 1
+            } else {
+                savepoints[savepoints.count - 1].1 = 0
+                savepoints[savepoints.count - 1].0 = i
+            }
+        }
+        i += 1
+        if i >= note.count && !savepoints.last!.2 {
+            let indexOfSplit = savepoints.last!.0
+            deadends.update(with: indexOfSplit)
+            if savepoints.count > 1 {
+                i = indexOfSplit
+                savepoints.removeLast()
+            }
+        }
     }
-    if matches2 > 0 {
-        matchList[noteIndex] = (MirrorOrientation.vertical, entrada[noteIndex]![0]!.count - matches2)
+
+    return savepoints.last!.2 ? i - savepoints.last!.1 : nil
+}
+
+func transpose(_ note: [[Substring]]) -> [[Substring]] {
+    if note.count == 0 { return note }
+    if note[0].count == 0 { return [[]] }
+
+    var transposed: [[Substring]] = []
+
+    for m in 0..<note[0].count {
+        var column: [Substring] = []
+
+        for n in 0..<note.count {
+            column.append(note[n][m])
+        }
+
+        transposed.append(column)
+    }
+
+    return transposed
+}
+
+var summary = 0
+
+for note in entrada {
+    if let rowsAbove = fixSmudge(note.value) {
+        summary += 100 * rowsAbove
+    } else if let columnsLeft = fixSmudge(transpose(note.value)) {
+        summary += columnsLeft
     }
 }
 
-print(matchList.reduce(0, { r, kv in
-    kv.value!.0 == MirrorOrientation.horizontal ? r + kv.value!.1 * 100 : r + kv.value!.1
-}
-))
+print(summary)
